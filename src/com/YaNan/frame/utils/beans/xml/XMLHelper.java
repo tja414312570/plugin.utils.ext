@@ -104,6 +104,7 @@ public class XMLHelper {
 	 * @param str
 	 * @param field
 	 */
+	@Deprecated
 	public void addNameMaping(String str, String field) {
 		this.nameMapping.put(str, field);
 
@@ -206,7 +207,7 @@ public class XMLHelper {
 	public void rootElement(List<?> nodeElement) {
 		Iterator<?> eIterator = nodeElement.iterator();
 		while (eIterator.hasNext()) {
-			Object obj = PlugsFactory.getPlugsInstance(this.mapping);
+			Object obj = PlugsFactory.getPlugsInstanceNew(this.mapping);
 			ClassLoader loader = new ClassLoader(obj);
 			Node node = (Node) eIterator.next();
 			Field[] fileds = this.getFields(classHelper,null);
@@ -395,7 +396,7 @@ public class XMLHelper {
 			for (Mapping mapping : mappGroup.value()) {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
-					Object realObject = PlugsFactory.getPlugsInstance(realClass);
+					Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
 					ClassLoader loader = new ClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -444,7 +445,7 @@ public class XMLHelper {
 			for (Mapping mapping : mappGroup.value()) {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
-					Object realObject = PlugsFactory.getPlugsInstance(realClass);
+					Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
 					ClassLoader loader = new ClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -512,7 +513,7 @@ public class XMLHelper {
 	private Object buildPojoNode(FieldHelper helper, Field field, Node node, int level, Class<?> fieldType,
 			String nodeName) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
-		Object object = PlugsFactory.getPlugsInstance(fieldType);
+		Object object = PlugsFactory.getPlugsInstanceNew(fieldType);
 		ClassLoader loader = new ClassLoader(object);
 		ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(fieldType);
 		Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -555,7 +556,7 @@ public class XMLHelper {
 		// 获取数组数据
 		Object tempArray = Array.newInstance(arrayType, nodes.size());
 		for (int i = 0; i < nodes.size(); i++) {
-			Object realObject = PlugsFactory.getPlugsInstance(arrayType);
+			Object realObject = PlugsFactory.getPlugsInstanceNew(arrayType);
 			ClassLoader loader = new ClassLoader(realObject);
 			ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(arrayType);
 			Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -604,7 +605,7 @@ public class XMLHelper {
 			Class<?> realClass = (Class<?>) pt.getActualTypeArguments()[1];
 			List<?> nodes = node.selectNodes(nodeName);
 			for (Object childs : nodes) {
-				Object realObject = PlugsFactory.getPlugsInstance(realClass);
+				Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
 				ClassLoader loader = new ClassLoader(realObject);
 				ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 				Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -655,7 +656,7 @@ public class XMLHelper {
 			if(node!=null){
 				List<?> nodes = node.selectNodes(nodeName);
 				for (Object childs : nodes) {
-					Object realObject = PlugsFactory.getPlugsInstance(realClass);
+					Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
 					ClassLoader loader = new ClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
