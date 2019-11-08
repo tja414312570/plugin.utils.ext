@@ -30,6 +30,7 @@ import com.YaNan.frame.utils.reflect.ClassLoader;
 import com.YaNan.frame.utils.reflect.cache.ClassHelper;
 import com.YaNan.frame.utils.reflect.cache.ClassInfoCache;
 import com.YaNan.frame.utils.reflect.cache.FieldHelper;
+import com.YaNan.frame.utils.resource.AbstractResourceEntry;
 import com.YaNan.frame.utils.resource.ResourceManager;
 
 /**
@@ -79,6 +80,11 @@ public class XMLHelper {
 	}
 
 	public XMLHelper() {
+	}
+
+	public XMLHelper(InputStream inputStream, Class<?> wrappClass) {
+		this.setInputStream(inputStream);
+		this.setMapping(wrappClass);
 	}
 
 	public String getCharset() {
@@ -133,13 +139,9 @@ public class XMLHelper {
 		classHelper = ClassInfoCache.getClassHelper(this.mapping);
 		Resource resource = classHelper.getAnnotation(Resource.class);
 		if (resource != null) {
-			List<File> file = ResourceManager.getResource(resource.value());
+			List<AbstractResourceEntry> file = ResourceManager.getResource(resource.value());
 			if (file.size() > 0)
-				try {
-					this.inputStream = new FileInputStream(file.get(0));
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
-				}
+			this.inputStream = file.get(0).getInputStream();
 		}
 		com.YaNan.frame.utils.beans.xml.Element element = classHelper
 				.getAnnotation(com.YaNan.frame.utils.beans.xml.Element.class);
