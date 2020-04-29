@@ -139,9 +139,8 @@ public class XMLHelper {
 		classHelper = ClassInfoCache.getClassHelper(this.mapping);
 		Resource resource = classHelper.getAnnotation(Resource.class);
 		if (resource != null) {
-			List<AbstractResourceEntry> file = ResourceManager.getResource(resource.value());
-			if (file.size() > 0)
-			this.inputStream = file.get(0).getInputStream();
+			AbstractResourceEntry file = ResourceManager.getResource(resource.value());
+			this.inputStream = file.getInputStream();
 		}
 		com.YaNan.frame.utils.beans.xml.Element element = classHelper
 				.getAnnotation(com.YaNan.frame.utils.beans.xml.Element.class);
