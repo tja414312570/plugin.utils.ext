@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target({ElementType.FIELD,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface XmlFile {
+public @interface XmlResource {
 	/**
 	 * 默认值
 	 * @return

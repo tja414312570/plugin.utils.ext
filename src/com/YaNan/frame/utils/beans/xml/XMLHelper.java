@@ -49,7 +49,7 @@ import com.YaNan.frame.utils.resource.ResourceManager;
  */
 @Error
 public class XMLHelper {
-	private File xmlFile;
+	private AbstractResourceEntry xmlResource;
 	private InputStream inputStream;
 	private Class<?> mapping;
 	// 字符集
@@ -86,7 +86,11 @@ public class XMLHelper {
 		this.setInputStream(inputStream);
 		this.setMapping(wrappClass);
 	}
-
+	public XMLHelper(AbstractResourceEntry resource, Class<?> wrappClass) {
+		this.setInputStream(resource.getInputStream());
+		this.xmlResource = resource;
+		this.setMapping(wrappClass);
+	}
 	public String getCharset() {
 		return charset;
 	}
@@ -162,7 +166,8 @@ public class XMLHelper {
 		if (!file.canRead())
 			throw new RuntimeException("file \"" + file + "\" can not be read");
 		try {
-			this.xmlFile = file;
+			this.xmlResource = new AbstractResourceEntry(file);
+			System.out.println(file.isAbsolute()+"  "+this.xmlResource);
 			this.inputStream = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			log.error(e.getMessage(),e);
@@ -276,8 +281,8 @@ public class XMLHelper {
 		FieldHelper helper = classHelper.getFieldHelper(field);
 		if (helper.getAnnotation(Ignore.class) != null)
 			return null;
-		if (helper.getAnnotation(XmlFile.class) != null)
-			return fieldType.equals(String.class) ? this.xmlFile.getAbsolutePath() : this.xmlFile;
+		if (helper.getAnnotation(XmlResource.class) != null)
+			return fieldType.equals(String.class) ? this.xmlResource == null ?null:this.xmlResource.getPath() : this.xmlResource;
 		if (helper.getAnnotation(NodeName.class) != null)
 			return node.getName();
 		if (helper.getAnnotation(NodePath.class) != null)
