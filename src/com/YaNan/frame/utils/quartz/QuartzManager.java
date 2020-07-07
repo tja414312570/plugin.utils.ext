@@ -24,7 +24,7 @@ import com.YaNan.frame.plugin.PlugsFactory;
 import com.YaNan.frame.plugin.RegisterDescription;
 import com.YaNan.frame.utils.reflect.cache.ClassHelper;
 import com.YaNan.frame.utils.reflect.cache.MethodHelper;
-import com.YaNan.frame.utils.reflect.ClassLoader;
+import com.YaNan.frame.utils.reflect.AppClassLoader;
 
 public class QuartzManager implements ServletContextListener {
 	private volatile static Scheduler scheduler ;
@@ -57,7 +57,7 @@ public class QuartzManager implements ServletContextListener {
 		while (iterator.hasNext()) {
 			ClassHelper helper = ClassHelper.getClassHelper(iterator.next().getRegisterClass());
 			Cron cron;
-			if (ClassLoader.implementsOf(helper.getCacheClass(), org.quartz.Job.class)
+			if (AppClassLoader.implementsOf(helper.getCacheClass(), org.quartz.Job.class)
 					&& (cron = helper.getAnnotation(Cron.class)) != null) {
 				jobClass(helper.getCacheClass(), cron);
 			} else {
@@ -120,7 +120,7 @@ public class QuartzManager implements ServletContextListener {
 				Class<?>[] types = met.getParameterTypes();
 				Object[] params = new Object[types.length];
 				for(int i = 0;i<types.length;i++ ){
-					if(ClassLoader.isNotNullType(types[i])){
+					if(AppClassLoader.isNotNullType(types[i])){
 						if(types[i].equals(int.class)||types[i].equals(short.class)||types[i].equals(long.class)){
 							params[i] = 0;
 						}else if(types[i].equals(boolean.class)){

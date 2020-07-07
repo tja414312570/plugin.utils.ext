@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.YaNan.frame.plugin.PlugsFactory;
 import com.YaNan.frame.plugin.autowired.exception.Error;
-import com.YaNan.frame.utils.reflect.ClassLoader;
+import com.YaNan.frame.utils.reflect.AppClassLoader;
 import com.YaNan.frame.utils.reflect.cache.ClassHelper;
 import com.YaNan.frame.utils.reflect.cache.ClassInfoCache;
 import com.YaNan.frame.utils.reflect.cache.FieldHelper;
@@ -214,7 +214,7 @@ public class XMLHelper {
 		Iterator<?> eIterator = nodeElement.iterator();
 		while (eIterator.hasNext()) {
 			Object obj = PlugsFactory.getPlugsInstanceNew(this.mapping);
-			ClassLoader loader = new ClassLoader(obj);
+			AppClassLoader loader = new AppClassLoader(obj);
 			Node node = (Node) eIterator.next();
 			Field[] fileds = this.getFields(classHelper,null);
 			for (Field field : fileds) {
@@ -293,7 +293,7 @@ public class XMLHelper {
 		com.YaNan.frame.utils.beans.xml.Element element = helper
 				.getAnnotation(com.YaNan.frame.utils.beans.xml.Element.class);
 		String nodeName = this.getNodeName(field, element);
-		if (ClassLoader.isBaseType(fieldType)) {
+		if (AppClassLoader.isBaseType(fieldType)) {
 			// if the field is base java data array or String array , need another method to proccess
 			if (fieldType.isArray()) {
 				// get the array's origin type
@@ -339,7 +339,7 @@ public class XMLHelper {
 			}
 		} else {
 			// rename node name
-			if (ClassLoader.implementsOf(fieldType, List.class)) {
+			if (AppClassLoader.implementsOf(fieldType, List.class)) {
 				//process List node
 				//if the node is multiple mapping node ,use reverse scan document node 
 				MappingGroup groups = helper.getAnnotation(MappingGroup.class);
@@ -347,7 +347,7 @@ public class XMLHelper {
 					object = this.buildListNode(helper, field, node, level, nodeName);
 				else
 					object = this.buildGroupListNode(helper, field, node, level, groups);
-			} else if (ClassLoader.implementsOf(fieldType, Map.class)) {
+			} else if (AppClassLoader.implementsOf(fieldType, Map.class)) {
 				//process Map node
 				MappingGroup groups = helper.getAnnotation(MappingGroup.class);
 				if (groups == null)
@@ -403,7 +403,7 @@ public class XMLHelper {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
 					Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
-					ClassLoader loader = new ClassLoader(realObject);
+					AppClassLoader loader = new AppClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
 					Object tempObject = null;
@@ -452,7 +452,7 @@ public class XMLHelper {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
 					Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
-					ClassLoader loader = new ClassLoader(realObject);
+					AppClassLoader loader = new AppClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
 					Object tempObject = null;
@@ -520,7 +520,7 @@ public class XMLHelper {
 			String nodeName) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
 		Object object = PlugsFactory.getPlugsInstanceNew(fieldType);
-		ClassLoader loader = new ClassLoader(object);
+		AppClassLoader loader = new AppClassLoader(object);
 		ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(fieldType);
 		Field[] fields = this.getFields(fieldClassHelper, helper);
 		Object tempObject = null;
@@ -563,7 +563,7 @@ public class XMLHelper {
 		Object tempArray = Array.newInstance(arrayType, nodes.size());
 		for (int i = 0; i < nodes.size(); i++) {
 			Object realObject = PlugsFactory.getPlugsInstanceNew(arrayType);
-			ClassLoader loader = new ClassLoader(realObject);
+			AppClassLoader loader = new AppClassLoader(realObject);
 			ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(arrayType);
 			Field[] fields = this.getFields(fieldClassHelper, helper);
 			Object tempObject = null;
@@ -612,7 +612,7 @@ public class XMLHelper {
 			List<?> nodes = node.selectNodes(nodeName);
 			for (Object childs : nodes) {
 				Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
-				ClassLoader loader = new ClassLoader(realObject);
+				AppClassLoader loader = new AppClassLoader(realObject);
 				ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 				Field[] fields = this.getFields(fieldClassHelper, helper);
 				Object tempObject = null;
@@ -663,7 +663,7 @@ public class XMLHelper {
 				List<?> nodes = node.selectNodes(nodeName);
 				for (Object childs : nodes) {
 					Object realObject = PlugsFactory.getPlugsInstanceNew(realClass);
-					ClassLoader loader = new ClassLoader(realObject);
+					AppClassLoader loader = new AppClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
 					Object tempObject = null;
@@ -681,7 +681,7 @@ public class XMLHelper {
 	}
 
 	public void addField(Object object, Field field) {
-		ClassLoader loader = new ClassLoader(object);
+		AppClassLoader loader = new AppClassLoader(object);
 		try {
 			loader.set(field, object);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
@@ -701,7 +701,7 @@ public class XMLHelper {
 		Object tempArrayList = Array.newInstance(targetType, nodes.size());
 		for (int i = 0; i < nodes.size(); i++) {
 			Element element = (org.dom4j.Element) nodes.get(i);
-			Array.set(tempArrayList, i, ClassLoader.castType(element.getText(), targetType));
+			Array.set(tempArrayList, i, AppClassLoader.castType(element.getText(), targetType));
 		}
 		return tempArrayList;
 	}
