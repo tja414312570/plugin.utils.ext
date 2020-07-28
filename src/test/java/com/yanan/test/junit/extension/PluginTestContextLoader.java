@@ -22,7 +22,7 @@ public class PluginTestContextLoader implements BeforeAllCallback{
 		logger.info("plugin test frame snapshot version");
 		//设置测试上下文类路径为主类路径
 		String classPath = this.getClass().getResource(".").getPath();
-		String packagePath = this.getClass().getPackage().getName().replace(".", File.separator);
+		String packagePath = this.getClass().getPackage().getName().replace(".", "/");
 		classPath = classPath.substring(0,classPath.indexOf(packagePath));
 		logger.info("test environment classpath :"+classPath);
 		ResourceManager.setClassPath(classPath, 0);
