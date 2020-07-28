@@ -20,9 +20,10 @@ public class PluginTestContextLoader implements BeforeAllCallback{
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 		logger.info("plugin test frame snapshot version");
+		Class<?> testClass = context.getRequiredTestClass();
 		//设置测试上下文类路径为主类路径
-		String classPath = this.getClass().getResource(".").getPath();
-		String packagePath = this.getClass().getPackage().getName().replace(".", "/");
+		String classPath = testClass.getResource(".").getPath();
+		String packagePath =testClass.getPackage().getName().replace(".", "/");
 		classPath = classPath.substring(0,classPath.indexOf(packagePath));
 		logger.info("test environment classpath :"+classPath);
 		ResourceManager.setClassPath(classPath, 0);
