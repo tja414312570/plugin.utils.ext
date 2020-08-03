@@ -3,6 +3,7 @@ package com.yanan.utils.beans.xml;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -21,15 +22,16 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.yanan.frame.plugin.PlugsFactory;
+import com.yanan.framework.resource.ResourceLoaderException;
 import com.yanan.utils.reflect.AppClassLoader;
+import com.yanan.utils.reflect.ParameterUtils;
+import com.yanan.utils.reflect.ReflectUtils;
 import com.yanan.utils.reflect.cache.ClassHelper;
 import com.yanan.utils.reflect.cache.ClassInfoCache;
 import com.yanan.utils.reflect.cache.FieldHelper;
-import com.yanan.utils.resource.AbstractResourceEntry;
+import com.yanan.utils.resource.FileResource;
 import com.yanan.utils.resource.ResourceManager;
 
 /**
@@ -47,15 +49,13 @@ import com.yanan.utils.resource.ResourceManager;
  *
  */
 public class XMLHelper {
-	private AbstractResourceEntry xmlResource;
+	private com.yanan.utils.resource.Resource xmlResource;
 	private InputStream inputStream;
 	private Class<?> mapping;
 	// 字符集
 	private String charset = "UTF-8";
 	// 命名映射
 	private Map<String, String> nameMapping = new HashMap<String, String>();
-	// 日志
-	Logger log = LoggerFactory.getLogger(XMLHelper.class);
 	// 用于存储结果集
 	private List<Object> beanObjectList = new ArrayList<Object>();
 	// remove mapping
@@ -84,10 +84,14 @@ public class XMLHelper {
 		this.setInputStream(inputStream);
 		this.setMapping(wrappClass);
 	}
-	public XMLHelper(AbstractResourceEntry resource, Class<?> wrappClass) {
-		this.setInputStream(resource.getInputStream());
-		this.xmlResource = resource;
-		this.setMapping(wrappClass);
+	public XMLHelper(com.yanan.utils.resource.Resource resource, Class<?> wrappClass) {
+		try {
+			this.setInputStream(resource.getInputStream());
+			this.xmlResource = resource;
+			this.setMapping(wrappClass);
+		} catch (IOException e) {
+			throw new ResourceLoaderException(e);
+		}
 	}
 	public String getCharset() {
 		return charset;
@@ -141,20 +145,24 @@ public class XMLHelper {
 	 * @param mappingClass 映射类
 	 */
 	public void setMapping(Class<?> mappingClass) {
-		this.mapping = mappingClass;
-		classHelper = ClassInfoCache.getClassHelper(this.mapping);
-		Resource resource = classHelper.getAnnotation(Resource.class);
-		if (resource != null) {
-			AbstractResourceEntry file = ResourceManager.getResource(resource.value());
-			this.inputStream = file.getInputStream();
+		try {
+			this.mapping = mappingClass;
+			classHelper = ClassInfoCache.getClassHelper(this.mapping);
+			Resource resource = classHelper.getAnnotation(Resource.class);
+			if (resource != null) {
+				com.yanan.utils.resource.Resource file = ResourceManager.getResource(resource.value());
+				this.inputStream = file.getInputStream();
+			}
+			com.yanan.utils.beans.xml.Element element = classHelper
+					.getAnnotation(com.yanan.utils.beans.xml.Element.class);
+			if (element != null)
+				this.nodeName = element.name();
+			Encode encode = classHelper.getAnnotation(Encode.class);
+			if (encode != null)
+				this.charset = encode.value();
+		} catch (IOException e) {
+			throw new ResourceLoaderException(e);
 		}
-		com.yanan.utils.beans.xml.Element element = classHelper
-				.getAnnotation(com.yanan.utils.beans.xml.Element.class);
-		if (element != null)
-			this.nodeName = element.name();
-		Encode encode = classHelper.getAnnotation(Encode.class);
-		if (encode != null)
-			this.charset = encode.value();
 	}
 
 	/**
@@ -168,11 +176,11 @@ public class XMLHelper {
 		if (!file.canRead())
 			throw new RuntimeException("file \"" + file + "\" can not be read");
 		try {
-			this.xmlResource = new AbstractResourceEntry(file);
+			this.xmlResource = new FileResource(file);
 			System.out.println(file.isAbsolute()+"  "+this.xmlResource);
 			this.inputStream = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
-			log.error(e.getMessage(),e);
+			throw new ResourceLoaderException(e);
 		}
 	}
 
@@ -228,7 +236,7 @@ public class XMLHelper {
 						loader.set(field, object);
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
 						| NoSuchMethodException | SecurityException e) {
-					log.error(e.getMessage(),e);
+					throw new RuntimeException(e);
 				}
 			}
 			this.beanObjectList.add(obj);
@@ -292,7 +300,7 @@ public class XMLHelper {
 		com.yanan.utils.beans.xml.Element element = helper
 				.getAnnotation(com.yanan.utils.beans.xml.Element.class);
 		String nodeName = this.getNodeName(field, element);
-		if (AppClassLoader.isBaseType(fieldType)) {
+		if (ParameterUtils.isBaseType(fieldType)) {
 			// if the field is base java data array or String array , need another method to proccess
 			if (fieldType.isArray()) {
 				// get the array's origin type
@@ -338,7 +346,7 @@ public class XMLHelper {
 			}
 		} else {
 			// rename node name
-			if (AppClassLoader.implementsOf(fieldType, List.class)) {
+			if (ReflectUtils.implementsOf(fieldType, List.class)) {
 				//process List node
 				//if the node is multiple mapping node ,use reverse scan document node 
 				MappingGroup groups = helper.getAnnotation(MappingGroup.class);
@@ -346,7 +354,7 @@ public class XMLHelper {
 					object = this.buildListNode(helper, field, node, level, nodeName);
 				else
 					object = this.buildGroupListNode(helper, field, node, level, groups);
-			} else if (AppClassLoader.implementsOf(fieldType, Map.class)) {
+			} else if (ReflectUtils.implementsOf(fieldType, Map.class)) {
 				//process Map node
 				MappingGroup groups = helper.getAnnotation(MappingGroup.class);
 				if (groups == null)
@@ -495,7 +503,8 @@ public class XMLHelper {
 	 * @return 节点名
 	 */
 	private String getNodeName(Field field, com.yanan.utils.beans.xml.Element element) {
-		String nodeName = (element != null && !element.name().trim().equals("")) ? element.name() : field.getName();
+		String nodeName = (element != null && !element.name().trim().equals("")) ? 
+				element.name() : field.getName();
 		return nodeName;
 	}
 
@@ -685,7 +694,7 @@ public class XMLHelper {
 			loader.set(field, object);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
-			log.error(e.getMessage(),e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -700,7 +709,7 @@ public class XMLHelper {
 		Object tempArrayList = Array.newInstance(targetType, nodes.size());
 		for (int i = 0; i < nodes.size(); i++) {
 			Element element = (org.dom4j.Element) nodes.get(i);
-			Array.set(tempArrayList, i, AppClassLoader.castType(element.getText(), targetType));
+			Array.set(tempArrayList, i, ParameterUtils.castType(element.getText(), targetType));
 		}
 		return tempArrayList;
 	}

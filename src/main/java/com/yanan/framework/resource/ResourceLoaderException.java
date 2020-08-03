@@ -31,5 +31,12 @@ public class ResourceLoaderException extends RuntimeException {
 	public ResourceLoaderException(String msg,Throwable cause) {
 		super(msg,cause);
 	}
+	/**
+	 * 抛出一个资源加载异常
+	 * @param cause 原因
+	 */
+	public ResourceLoaderException(Throwable cause) {
+		super(cause);
+	}
 
 }
