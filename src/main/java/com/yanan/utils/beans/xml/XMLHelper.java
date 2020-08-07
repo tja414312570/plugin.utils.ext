@@ -23,7 +23,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
-import com.yanan.frame.plugin.PlugsFactory;
+import com.yanan.framework.plugin.PlugsFactory;
 import com.yanan.framework.resource.ResourceLoaderException;
 import com.yanan.utils.reflect.AppClassLoader;
 import com.yanan.utils.reflect.ParameterUtils;

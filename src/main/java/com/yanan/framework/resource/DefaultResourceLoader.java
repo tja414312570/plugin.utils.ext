@@ -2,9 +2,9 @@ package com.yanan.framework.resource;
 
 import java.util.Objects;
 
-import com.yanan.frame.plugin.PlugsFactory;
-import com.yanan.frame.plugin.ProxyModel;
-import com.yanan.frame.plugin.annotations.Register;
+import com.yanan.framework.plugin.PlugsFactory;
+import com.yanan.framework.plugin.ProxyModel;
+import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.utils.resource.Resource;
 import com.yanan.utils.resource.ResourceManager;
 

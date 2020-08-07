@@ -20,9 +20,11 @@ import org.quartz.SchedulerException;
 import org.quartz.TriggerBuilder;
 import org.quartz.impl.StdSchedulerFactory;
 
-import com.yanan.frame.plugin.PlugsFactory;
-import com.yanan.frame.plugin.definition.RegisterDefinition;
+import com.yanan.framework.plugin.PlugsFactory;
+import com.yanan.framework.plugin.definition.RegisterDefinition;
 import com.yanan.utils.reflect.AppClassLoader;
+import com.yanan.utils.reflect.ParameterUtils;
+import com.yanan.utils.reflect.ReflectUtils;
 import com.yanan.utils.reflect.cache.ClassHelper;
 import com.yanan.utils.reflect.cache.MethodHelper;
 
@@ -57,7 +59,7 @@ public class QuartzManager implements ServletContextListener {
 		while (iterator.hasNext()) {
 			ClassHelper helper = ClassHelper.getClassHelper(iterator.next().getRegisterClass());
 			Cron cron;
-			if (AppClassLoader.implementsOf(helper.getCacheClass(), org.quartz.Job.class)
+			if (ReflectUtils.implementsOf(helper.getCacheClass(), org.quartz.Job.class)
 					&& (cron = helper.getAnnotation(Cron.class)) != null) {
 				jobClass(helper.getCacheClass(), cron);
 			} else {
@@ -120,7 +122,7 @@ public class QuartzManager implements ServletContextListener {
 				Class<?>[] types = met.getParameterTypes();
 				Object[] params = new Object[types.length];
 				for(int i = 0;i<types.length;i++ ){
-					if(AppClassLoader.isNotNullType(types[i])){
+					if(ParameterUtils.isNotNullType(types[i])){
 						if(types[i].equals(int.class)||types[i].equals(short.class)||types[i].equals(long.class)){
 							params[i] = 0;
 						}else if(types[i].equals(boolean.class)){

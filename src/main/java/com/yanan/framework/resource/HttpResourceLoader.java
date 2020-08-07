@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 
-import com.yanan.frame.plugin.ProxyModel;
-import com.yanan.frame.plugin.annotations.Register;
+import com.yanan.framework.plugin.ProxyModel;
+import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.utils.resource.Resource;
 
 @Register(attribute= {"http","https"},model=ProxyModel.CGLIB)
