@@ -177,7 +177,6 @@ public class XMLHelper {
 			throw new RuntimeException("file \"" + file + "\" can not be read");
 		try {
 			this.xmlResource = new FileResource(file);
-			System.out.println(file.isAbsolute()+"  "+this.xmlResource);
 			this.inputStream = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			throw new ResourceLoaderException(e);
