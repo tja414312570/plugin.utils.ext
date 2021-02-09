@@ -405,25 +405,42 @@ public class XMLHelper {
 			String nodeName = childNode.getName();
 			if (nodeName == null)
 				continue;
+			boolean found = false;
 			for (Mapping mapping : mappGroup.value()) {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
 					Object realObject = PlugsFactory.getPluginsInstanceNew(realClass);
-					AppClassLoader loader = new AppClassLoader(realObject);
-					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
-					Field[] fields = this.getFields(fieldClassHelper, helper);
-					Object tempObject = null;
-					for (Field f : fields) {
-						tempObject = processField((Node) childNode, f, fieldClassHelper, level);
-						if (f != null) {
-							loader.set(f, tempObject);
-						}
-					}
+					processObject(helper, level, childNode, realClass, realObject);
 					realList.add(realObject);
+					found = true;
 				}
+			}
+			if(!found) {
+				Class<?> support = mappGroup.support();
+				if(support == null || Object.class.equals(support)) 
+					support = ParameterUtils.getListGenericType(field);
+				Object realObject = PlugsFactory.getPluginsInstanceByAttributeStrict(support, nodeName);
+				if(realObject == null)
+					throw new XmlMappingException("could not found mapping node for " + nodeName + " at support " + support);
+				processObject(helper, level, childNode, PlugsFactory.getPluginsHandler(realObject).getRegisterDefinition().getRegisterClass(), realObject);
+				realList.add(realObject);
 			}
 		}
 		return realList;
+	}
+
+	public void processObject(FieldHelper helper, int level, Node childNode, Class<?> realClass, Object realObject)
+			throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+		AppClassLoader loader = new AppClassLoader(realObject);
+		ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
+		Field[] fields = this.getFields(fieldClassHelper, helper);
+		Object tempObject = null;
+		for (Field f : fields) {
+			tempObject = processField((Node) childNode, f, fieldClassHelper, level);
+			if (f != null) {
+				loader.set(f, tempObject);
+			}
+		}
 	}
 
 	/**

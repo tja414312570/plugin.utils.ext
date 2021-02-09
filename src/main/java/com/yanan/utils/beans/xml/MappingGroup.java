@@ -19,4 +19,9 @@ public @interface MappingGroup{
 	 * @return 映射集合
 	 */
 	Mapping[] value();
+	/**
+	 * 支持的注解类型
+	 * @return
+	 */
+	Class<?> support() default Object.class;
 }
