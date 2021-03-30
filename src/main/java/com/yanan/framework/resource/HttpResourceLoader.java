@@ -10,11 +10,12 @@ import org.slf4j.Logger;
 
 import com.yanan.framework.plugin.ProxyModel;
 import com.yanan.framework.plugin.annotations.Register;
+import com.yanan.framework.plugin.annotations.Service;
 import com.yanan.utils.resource.Resource;
 
 @Register(attribute= {"http","https"},model=ProxyModel.CGLIB)
 public class HttpResourceLoader implements ResourceLoader{
-
+	@Service
 	private Logger logger;
 	@Override
 	public Resource getResource(String urlPath) {
