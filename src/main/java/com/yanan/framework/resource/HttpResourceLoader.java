@@ -33,7 +33,7 @@ public class HttpResourceLoader implements ResourceLoader{
 				// 正常响应
 			return new HttpResource(httpURLConnection);
 		} catch (Exception e) {
-			throw new ResourceLoaderException("failed get http resource at url:"+urlPath,e);
+			throw new ResourceLoaderException("failed get http resource from url:"+urlPath,e);
 		}
 	}
 	public HttpURLConnection get(String urlPath) throws IOException{
