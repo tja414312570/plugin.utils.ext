@@ -223,7 +223,7 @@ public class XMLHelper {
 	public void rootElement(List<?> nodeElement) {
 		Iterator<?> eIterator = nodeElement.iterator();
 		while (eIterator.hasNext()) {
-			Object obj = PlugsFactory.getPluginsInstanceNew(this.mapping);
+			Object obj = PlugsFactory.getPluginsNewInstance(this.mapping);
 			AppClassLoader loader = new AppClassLoader(obj);
 			Node node = (Node) eIterator.next();
 			Field[] fileds = this.getFields(classHelper,null);
@@ -395,7 +395,7 @@ public class XMLHelper {
 		Class<?> listClass;
 		// get the set object
 		listClass = typeAnno != null ? typeAnno.value() : ArrayList.class;
-		List realList = (List) PlugsFactory.getPluginsInstanceNew(listClass);
+		List realList = (List) PlugsFactory.getPluginsNewInstance(listClass);
 		// get all tag
 		if(node==null)
 			return realList;
@@ -409,7 +409,7 @@ public class XMLHelper {
 			for (Mapping mapping : mappGroup.value()) {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
-					Object realObject = PlugsFactory.getPluginsInstanceNew(realClass);
+					Object realObject = PlugsFactory.getPluginsNewInstance(realClass);
 					processObject(helper, level, childNode, realClass, realObject);
 					realList.add(realObject);
 					found = true;
@@ -464,7 +464,7 @@ public class XMLHelper {
 			SecurityException {
 		com.yanan.utils.beans.xml.Type typeAnno = helper.getAnnotation(com.yanan.utils.beans.xml.Type.class);
 		Class<?> mapClass = typeAnno != null ? typeAnno.value() : HashMap.class;
-		Map realMap = (Map) PlugsFactory.getPluginsInstanceNew(mapClass);
+		Map realMap = (Map) PlugsFactory.getPluginsNewInstance(mapClass);
 		Iterator<?> elementIterator = ((Element) node).elementIterator();
 		while (elementIterator.hasNext()) {
 			Node childNode = (Node) elementIterator.next();
@@ -474,7 +474,7 @@ public class XMLHelper {
 			for (Mapping mapping : mappGroup.value()) {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
-					Object realObject = PlugsFactory.getPluginsInstanceNew(realClass);
+					Object realObject = PlugsFactory.getPluginsNewInstance(realClass);
 					AppClassLoader loader = new AppClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -543,7 +543,7 @@ public class XMLHelper {
 	private Object buildPojoNode(FieldHelper helper, Field field, Node node, int level, Class<?> fieldType,
 			String nodeName) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
-		Object object = PlugsFactory.getPluginsInstanceNew(fieldType);
+		Object object = PlugsFactory.getPluginsNewInstance(fieldType);
 		AppClassLoader loader = new AppClassLoader(object);
 		ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(fieldType);
 		Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -586,7 +586,7 @@ public class XMLHelper {
 		// 获取数组数据
 		Object tempArray = Array.newInstance(arrayType, nodes.size());
 		for (int i = 0; i < nodes.size(); i++) {
-			Object realObject = PlugsFactory.getPluginsInstanceNew(arrayType);
+			Object realObject = PlugsFactory.getPluginsNewInstance(arrayType);
 			AppClassLoader loader = new AppClassLoader(realObject);
 			ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(arrayType);
 			Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -626,7 +626,7 @@ public class XMLHelper {
 		Map realMap = null;
 		Class<?> mapClass;
 		mapClass = typeAnno != null ? typeAnno.value() : HashMap.class;
-		realMap = (Map) PlugsFactory.getPluginsInstanceNew(mapClass);
+		realMap = (Map) PlugsFactory.getPluginsNewInstance(mapClass);
 		// 获取泛型类型
 		Type type = field.getGenericType();
 		if (type instanceof ParameterizedType) {
@@ -635,7 +635,7 @@ public class XMLHelper {
 			Class<?> realClass = (Class<?>) pt.getActualTypeArguments()[1];
 			List<?> nodes = node.selectNodes(nodeName);
 			for (Object childs : nodes) {
-				Object realObject = PlugsFactory.getPluginsInstanceNew(realClass);
+				Object realObject = PlugsFactory.getPluginsNewInstance(realClass);
 				AppClassLoader loader = new AppClassLoader(realObject);
 				ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 				Field[] fields = this.getFields(fieldClassHelper, helper);
@@ -676,7 +676,7 @@ public class XMLHelper {
 		Class<?> listClass;
 		// 获取集合的实例
 		listClass = typeAnno != null ? typeAnno.value() : ArrayList.class;
-		List realList = (List) PlugsFactory.getPluginsInstanceNew(listClass);
+		List realList = (List) PlugsFactory.getPluginsNewInstance(listClass);
 		// 获取泛型类型
 		Type type = field.getGenericType();
 		if (type instanceof ParameterizedType) {
@@ -686,7 +686,7 @@ public class XMLHelper {
 			if(node!=null){
 				List<?> nodes = node.selectNodes(nodeName);
 				for (Object childs : nodes) {
-					Object realObject = PlugsFactory.getPluginsInstanceNew(realClass);
+					Object realObject = PlugsFactory.getPluginsNewInstance(realClass);
 					AppClassLoader loader = new AppClassLoader(realObject);
 					ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(realClass);
 					Field[] fields = this.getFields(fieldClassHelper, helper);
