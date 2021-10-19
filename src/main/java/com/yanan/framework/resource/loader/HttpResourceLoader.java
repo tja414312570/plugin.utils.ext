@@ -1,4 +1,4 @@
-package com.yanan.framework.resource;
+package com.yanan.framework.resource.loader;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import com.yanan.framework.plugin.ProxyModel;
 import com.yanan.framework.plugin.annotations.Register;
 import com.yanan.framework.plugin.annotations.Service;
+import com.yanan.framework.resource.ResourceLoader;
+import com.yanan.framework.resource.ResourceLoaderException;
 import com.yanan.utils.resource.Resource;
 
 @Register(attribute= {"http","https"},model=ProxyModel.CGLIB)

@@ -1,4 +1,4 @@
-package com.yanan.framework.resource;
+package com.yanan.framework.resource.loader;
 
 import java.io.IOException;
 import java.io.InputStream;
