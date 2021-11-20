@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import com.yanan.utils.resource.Resource;
@@ -125,6 +127,14 @@ public class HttpResource implements Resource{
 	@Override
 	public String getName() {
 		return name;
+	}
+	@Override
+	public URI getURI() {
+		try {
+			return httpURLConnection.getURL().toURI();
+		} catch (URISyntaxException e) {
+			throw new RuntimeException("falied to get uri",e);
+		}
 	}
 
 }
