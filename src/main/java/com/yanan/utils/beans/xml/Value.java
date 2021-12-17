@@ -16,5 +16,5 @@ public @interface Value {
 	 * 节点路径
 	 * @return 节点路径
 	 */
-	String value() default "";
+	String node() default "";
 }

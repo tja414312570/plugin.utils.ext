@@ -24,5 +24,5 @@ public @interface Mapping {
 	 * 对应实现类
 	 * @return 目标实现类
 	 */
-	Class<?> target();
+	Class<?> target() default Object.class;
 }

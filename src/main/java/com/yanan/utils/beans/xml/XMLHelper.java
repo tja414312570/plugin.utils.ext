@@ -25,6 +25,8 @@ import org.dom4j.io.SAXReader;
 
 import com.yanan.framework.plugin.PlugsFactory;
 import com.yanan.framework.resource.ResourceLoaderException;
+import com.yanan.utils.string.StringUtil;
+import com.yanan.utils.ArrayUtils;
 import com.yanan.utils.reflect.AppClassLoader;
 import com.yanan.utils.reflect.ParameterUtils;
 import com.yanan.utils.reflect.ReflectUtils;
@@ -36,14 +38,31 @@ import com.yanan.utils.resource.ResourceManager;
 
 /**
  * xml解析工具，反向加载，通过java映射寻址xml，主要通过注解方式驱动，所有对象通过PlugsHandler代理
- * <p>Encode注解，用于提供读取xml的字符集 Attribute 可用于Field，标示该字段是一个节点的属性，用于基础类型 tip:基础类型</p>
- * <p>java八中基础类型与String类型以及对应的数组类型 Element 用于集合或其他pojo类型，如List，Map，或自定义类型，可以用于类声明</p>
- * <p>Value 用于Field，标示该字段是节点的文本值 AsXml 用于Field,标示该字段为该节点作为xml Ignore 不处理该标签 Type</p>
- * <p>用于指定聚合类的实现类 20180919</p>
- * <p>支持Encode注解，Attribute注解，Element注解，Value注解，AsXml注解，Ignore注解,Type注解</p>
- * <p>支持List，简单POJO以及基本数据类型</p>
- * <p>20181010 新增MappingGroup的支持，重构代码结构</p>
- * <p>20181011 FieldTypes{@link com.yanan.utils.beans.xml.FieldType}新增All类型，支持类所有Field的获取</p>
+ * <p>
+ * Encode注解，用于提供读取xml的字符集 Attribute 可用于Field，标示该字段是一个节点的属性，用于基础类型 tip:基础类型
+ * </p>
+ * <p>
+ * java八中基础类型与String类型以及对应的数组类型 Element 用于集合或其他pojo类型，如List，Map，或自定义类型，可以用于类声明
+ * </p>
+ * <p>
+ * Value 用于Field，标示该字段是节点的文本值 AsXml 用于Field,标示该字段为该节点作为xml Ignore 不处理该标签 Type
+ * </p>
+ * <p>
+ * 用于指定聚合类的实现类 20180919
+ * </p>
+ * <p>
+ * 支持Encode注解，Attribute注解，Element注解，Value注解，AsXml注解，Ignore注解,Type注解
+ * </p>
+ * <p>
+ * 支持List，简单POJO以及基本数据类型
+ * </p>
+ * <p>
+ * 20181010 新增MappingGroup的支持，重构代码结构
+ * </p>
+ * <p>
+ * 20181011
+ * FieldTypes{@link com.yanan.utils.beans.xml.FieldType}新增All类型，支持类所有Field的获取
+ * </p>
  * 
  * @author yanan
  *
@@ -68,8 +87,9 @@ public class XMLHelper {
 	private Map<String, Class<?>> mapMapping = new HashMap<String, Class<?>>();
 	// 映射类的ClassHelper
 	private ClassHelper classHelper;
+
 	/**
-	 * @param files xml文件
+	 * @param files      xml文件
 	 * @param wrappClass 需要转化的Class
 	 */
 	public XMLHelper(File files, Class<?> wrappClass) {
@@ -84,6 +104,7 @@ public class XMLHelper {
 		this.setInputStream(inputStream);
 		this.setMapping(wrappClass);
 	}
+
 	public XMLHelper(com.yanan.utils.resource.Resource resource, Class<?> wrappClass) {
 		try {
 			this.setInputStream(resource.getInputStream());
@@ -93,6 +114,7 @@ public class XMLHelper {
 			throw new ResourceLoaderException(e);
 		}
 	}
+
 	public String getCharset() {
 		return charset;
 	}
@@ -113,7 +135,7 @@ public class XMLHelper {
 	/**
 	 * 添加命名映射，已弃用
 	 * 
-	 * @param name 名称
+	 * @param name  名称
 	 * @param field 属性
 	 */
 	@Deprecated
@@ -121,10 +143,12 @@ public class XMLHelper {
 		this.nameMapping.put(name, field);
 
 	}
+
 	/**
 	 * 添加名称映射
+	 * 
 	 * @param name 节点名
-	 * @param cls 类
+	 * @param cls  类
 	 */
 	public void addMapMapping(String name, Class<?> cls) {
 		this.mapMapping.put(name, cls);
@@ -226,7 +250,7 @@ public class XMLHelper {
 			Object obj = PlugsFactory.getPluginsNewInstance(this.mapping);
 			AppClassLoader loader = new AppClassLoader(obj);
 			Node node = (Node) eIterator.next();
-			Field[] fileds = this.getFields(classHelper,null);
+			Field[] fileds = this.getFields(classHelper, null);
 			for (Field field : fileds) {
 				// 交给Field处理
 				try {
@@ -241,24 +265,26 @@ public class XMLHelper {
 			this.beanObjectList.add(obj);
 		}
 	}
+
 	/**
 	 * 获取类的Field
+	 * 
 	 * @param classHelper class helper
 	 * @return 属性结合
 	 */
-	private Field[] getFields(ClassHelper classHelper,FieldHelper helper) {
+	private Field[] getFields(ClassHelper classHelper, FieldHelper helper) {
 		FieldType types = null;
-		if(helper!=null)
-			types =  helper.getAnnotation(FieldType.class);
-		if(types==null)
+		if (helper != null)
+			types = helper.getAnnotation(FieldType.class);
+		if (types == null)
 			types = classHelper.getAnnotation(FieldType.class);
-		if(types==null)
+		if (types == null)
 			types = this.classHelper.getAnnotation(FieldType.class);
-		if(types == null||types.value() == FieldTypes.DECLARED)
+		if (types == null || types.value() == FieldTypes.DECLARED)
 			return classHelper.getDeclaredFields();
-		if(types.value() == FieldTypes.DEFAULTED)
+		if (types.value() == FieldTypes.DEFAULTED)
 			return classHelper.getFields();
-		if(types.value() ==  FieldTypes.ALL)
+		if (types.value() == FieldTypes.ALL)
 			return classHelper.getAllFields();
 		return classHelper.getDeclaredFields();
 	}
@@ -266,21 +292,23 @@ public class XMLHelper {
 	/**
 	 * Field的处理
 	 * 
-	 * @param node 当前节点
-	 * @param field java映射的Field
+	 * @param node        当前节点
+	 * @param field       java映射的Field
 	 * @param classHelper 需要一个ClassHelper来获取反射信息
-	 * @param level 当前扫描层次
-	 * @return 对象 
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @param level       当前扫描层次
+	 * @return 对象
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	public Object processField(Node node, Field field, ClassHelper classHelper, int level)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
 			SecurityException {
 		if (this.scanLevel > -1 && level++ > scanLevel)
+			return null;
+		if(node == null)
 			return null;
 		Class<?> fieldType = field.getType();
 		Object object = null;
@@ -288,7 +316,8 @@ public class XMLHelper {
 		if (helper.getAnnotation(Ignore.class) != null)
 			return null;
 		if (helper.getAnnotation(XmlResource.class) != null)
-			return fieldType.equals(String.class) ? this.xmlResource == null ?null:this.xmlResource.getPath() : this.xmlResource;
+			return fieldType.equals(String.class) ? this.xmlResource == null ? null : this.xmlResource.getPath()
+					: this.xmlResource;
 		if (helper.getAnnotation(NodeName.class) != null)
 			return node.getName();
 		if (helper.getAnnotation(NodePath.class) != null)
@@ -296,11 +325,11 @@ public class XMLHelper {
 		if (helper.getAnnotation(NodeUniquePath.class) != null)
 			return node.getUniquePath();
 		// get the node info from Element annotation
-		com.yanan.utils.beans.xml.Element element = helper
-				.getAnnotation(com.yanan.utils.beans.xml.Element.class);
+		com.yanan.utils.beans.xml.Element element = helper.getAnnotation(com.yanan.utils.beans.xml.Element.class);
 		String nodeName = this.getNodeName(field, element);
 		if (ParameterUtils.isBaseType(fieldType)) {
-			// if the field is base java data array or String array , need another method to proccess
+			// if the field is base java data array or String array , need another method to
+			// proccess
 			if (fieldType.isArray()) {
 				// get the array's origin type
 				Class<?> arrayType = fieldType.getComponentType();
@@ -314,7 +343,7 @@ public class XMLHelper {
 				if (attribute != null) {
 					if (!attribute.name().trim().equals(""))
 						nodeName = attribute.name();
-					if(node!=null)
+					if (node != null)
 						object = ((Element) node).attributeValue(nodeName);
 					// if (object == null)
 					// throw new RuntimeException(
@@ -327,7 +356,14 @@ public class XMLHelper {
 				} else {
 					Value value = helper.getAnnotation(Value.class);
 					if (value != null) {
-						object = node.getText();
+						if(StringUtil.isEmpty(value.node()))
+							object = node.getText().trim();
+						else {
+							node = node.selectSingleNode(value.node());
+							if(node != null ) {
+								object = node.getText().trim();
+							}
+						}
 					} else {
 						AsXml as = helper.getAnnotation(AsXml.class);
 						if (as != null) {
@@ -346,25 +382,26 @@ public class XMLHelper {
 		} else {
 			// rename node name
 			if (ReflectUtils.implementsOf(fieldType, List.class)) {
-				//process List node
-				//if the node is multiple mapping node ,use reverse scan document node 
-				MappingGroup groups = helper.getAnnotation(MappingGroup.class);
-				if (groups == null)
+				// process List node
+				// if the node is multiple mapping node ,use reverse scan document node
+				Mapping[] mappings = field.getAnnotationsByType(Mapping.class);
+				if (ArrayUtils.isEmpty(mappings))
 					object = this.buildListNode(helper, field, node, level, nodeName);
 				else
-					object = this.buildGroupListNode(helper, field, node, level, groups);
+					object = this.buildGroupListNode(helper, field, node, level, mappings);
+				System.err.println(object);
 			} else if (ReflectUtils.implementsOf(fieldType, Map.class)) {
-				//process Map node
+				// process Map node
 				MappingGroup groups = helper.getAnnotation(MappingGroup.class);
 				if (groups == null)
 					object = this.buildMapNode(helper, field, node, level, nodeName);
 				else
 					object = this.buildGroupMapNode(helper, field, node, level, groups);
 			} else if (fieldType.isArray()) {
-				//process pojo array
+				// process pojo array
 				object = this.buildPojoArrayNode(helper, field, node, level, element, fieldType, nodeName);
 			} else {
-				//process simple pojo
+				// process simple pojo
 				object = this.buildPojoNode(helper, field, node, level, fieldType, nodeName);
 			}
 		}
@@ -374,20 +411,20 @@ public class XMLHelper {
 	/**
 	 * 构建带有MappingGroup的节点
 	 * 
-	 * @param helper field helper
-	 * @param field field
-	 * @param node node
-	 * @param level level
+	 * @param helper    field helper
+	 * @param field     field
+	 * @param node      node
+	 * @param level     level
 	 * @param mappGroup mapping
 	 * @return 对象
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Object buildGroupListNode(FieldHelper helper, Field field, Node node, int level, MappingGroup mappGroup)
+	private Object buildGroupListNode(FieldHelper helper, Field field, Node node, int level, Mapping[] mappings)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
 			SecurityException {
 		// get type annotation
@@ -397,7 +434,7 @@ public class XMLHelper {
 		listClass = typeAnno != null ? typeAnno.value() : ArrayList.class;
 		List realList = (List) PlugsFactory.getPluginsNewInstance(listClass);
 		// get all tag
-		if(node==null)
+		if (node == null)
 			return realList;
 		Iterator<?> elementIterator = ((Element) node).elementIterator();
 		while (elementIterator.hasNext()) {
@@ -405,28 +442,30 @@ public class XMLHelper {
 			String nodeName = childNode.getName();
 			if (nodeName == null)
 				continue;
-			boolean found = false;
-			for (Mapping mapping : mappGroup.value()) {
+			for (Mapping mapping : mappings) {
 				if (mapping.node().equals(nodeName)) {
 					Class<?> realClass = mapping.target();
-					Object realObject = PlugsFactory.getPluginsNewInstance(realClass);
-					processObject(helper, level, childNode, realClass, realObject);
+					if(Object.class.equals(realClass))
+						realClass = ParameterUtils.getListGenericType(field);
+					Object realObject;
+					if(ParameterUtils.isBaseType(ParameterUtils.getListGenericType(field))) {
+						realObject = ParameterUtils.parseBaseType(realClass, childNode.getText(),null);
+					}else if (ReflectUtils.implementsOf(realClass, XmlMappingParser.class)) {
+						realObject = parse((Class<? extends XmlMappingParser>) realClass, node, field);
+					} else {
+						realObject = PlugsFactory.getPluginsNewInstance(realClass);
+						processObject(helper, level, childNode, realClass, realObject);
+					}
 					realList.add(realObject);
-					found = true;
 				}
-			}
-			if(!found) {
-				Class<?> support = mappGroup.support();
-				if(support == null || Object.class.equals(support)) 
-					support = ParameterUtils.getListGenericType(field);
-				Object realObject = PlugsFactory.getPluginsInstanceByAttributeStrict(support, nodeName);
-				if(realObject == null)
-					throw new XmlMappingException("could not found mapping node for " + nodeName + " at support " + support);
-				processObject(helper, level, childNode, PlugsFactory.getPluginsHandler(realObject).getRegisterDefinition().getRegisterClass(), realObject);
-				realList.add(realObject);
 			}
 		}
 		return realList;
+	}
+
+	private Object parse(Class<? extends XmlMappingParser> xmlParseClass, Node node, Field field) {
+		XmlMappingParser xmlMappingParser = PlugsFactory.getPluginsInstance(xmlParseClass);
+		return xmlMappingParser.parse(node, field);
 	}
 
 	public void processObject(FieldHelper helper, int level, Node childNode, Class<?> realClass, Object realObject)
@@ -446,17 +485,17 @@ public class XMLHelper {
 	/**
 	 * 构建具有Group的Map集合
 	 * 
-	 * @param helper helper
-	 * @param field field
-	 * @param node node
-	 * @param level level
+	 * @param helper    helper
+	 * @param field     field
+	 * @param node      node
+	 * @param level     level
 	 * @param mappGroup mappGroup
 	 * @return 对象
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object buildGroupMapNode(FieldHelper helper, Field field, Node node, int level, MappingGroup mappGroup)
@@ -495,7 +534,7 @@ public class XMLHelper {
 	/**
 	 * Map中获取Key值
 	 * 
-	 * @param helper field helper
+	 * @param helper    field helper
 	 * @param realClass class
 	 * @return 属性
 	 */
@@ -512,43 +551,56 @@ public class XMLHelper {
 		}
 		return key;
 	}
+
 	/**
 	 * 获取节点名称
-	 * @param field 属性
+	 * 
+	 * @param field   属性
 	 * @param element 元素
 	 * @return 节点名
 	 */
 	private String getNodeName(Field field, com.yanan.utils.beans.xml.Element element) {
-		String nodeName = (element != null && !element.name().trim().equals("")) ? 
-				element.name() : field.getName();
+		String nodeName = (element != null && !element.name().trim().equals("")) ? element.name() : field.getName();
 		return nodeName;
 	}
 
 	/**
 	 * 构建pojo对象
 	 * 
-	 * @param helper field helper
-	 * @param field field
-	 * @param node node
-	 * @param level level
+	 * @param helper    field helper
+	 * @param field     field
+	 * @param node      node
+	 * @param level     level
 	 * @param fieldType field type
-	 * @param nodeName node name
+	 * @param nodeName  node name
 	 * @return object
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	private Object buildPojoNode(FieldHelper helper, Field field, Node node, int level, Class<?> fieldType,
 			String nodeName) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
+		Mapping[] mappings = field.getAnnotationsByType(Mapping.class);
+		Node childNode = null;
+		if(!ArrayUtils.isEmpty(mappings)) {
+			for(Mapping mapping : mappings) {
+				if((childNode = node.selectSingleNode(mapping.node())) != null) {
+					break;
+				}
+			}
+		}else {
+			childNode = node.selectSingleNode(nodeName);
+		}
+		if(childNode == null)
+			return null;
 		Object object = PlugsFactory.getPluginsNewInstance(fieldType);
 		AppClassLoader loader = new AppClassLoader(object);
 		ClassHelper fieldClassHelper = ClassInfoCache.getClassHelper(fieldType);
 		Field[] fields = this.getFields(fieldClassHelper, helper);
 		Object tempObject = null;
-		Node childNode = node.selectSingleNode(nodeName);
 		for (Field f : fields) {
 			tempObject = processField(childNode, f, fieldClassHelper, level);
 			if (f != null) {
@@ -561,19 +613,19 @@ public class XMLHelper {
 	/**
 	 * 构建pojo数据
 	 * 
-	 * @param helper field helper
-	 * @param field field
-	 * @param node node
-	 * @param level level 
-	 * @param element element
+	 * @param helper    field helper
+	 * @param field     field
+	 * @param node      node
+	 * @param level     level
+	 * @param element   element
 	 * @param fieldType field type
-	 * @param nodeName node name
+	 * @param nodeName  node name
 	 * @return object
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	private Object buildPojoArrayNode(FieldHelper helper, Field field, Node node, int level,
 			com.yanan.utils.beans.xml.Element element, Class<?> fieldType, String nodeName)
@@ -605,17 +657,17 @@ public class XMLHelper {
 	/**
 	 * 构建Map节点数据
 	 * 
-	 * @param helper filed helper
-	 * @param field field
-	 * @param node node
-	 * @param level level
+	 * @param helper   filed helper
+	 * @param field    field
+	 * @param node     node
+	 * @param level    level
 	 * @param nodeName node name
 	 * @return object
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object buildMapNode(FieldHelper helper, Field field, Node node, int level, String nodeName)
@@ -655,17 +707,17 @@ public class XMLHelper {
 	/**
 	 * 构造List节点数据
 	 * 
-	 * @param helper field helper
-	 * @param field field
-	 * @param node node
-	 * @param level level
+	 * @param helper   field helper
+	 * @param field    field
+	 * @param node     node
+	 * @param level    level
 	 * @param nodeName node name
 	 * @return object
-	 * @throws IllegalAccessException ex
-	 * @throws IllegalArgumentException ex
+	 * @throws IllegalAccessException    ex
+	 * @throws IllegalArgumentException  ex
 	 * @throws InvocationTargetException ex
-	 * @throws NoSuchMethodException ex
-	 * @throws SecurityException ex
+	 * @throws NoSuchMethodException     ex
+	 * @throws SecurityException         ex
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private Object buildListNode(FieldHelper helper, Field field, Node node, int level, String nodeName)
@@ -683,7 +735,7 @@ public class XMLHelper {
 			ParameterizedType pt = (ParameterizedType) type;
 			// 得到泛型里的class类型对象
 			Class<?> realClass = (Class<?>) pt.getActualTypeArguments()[0];
-			if(node!=null){
+			if (node != null) {
 				List<?> nodes = node.selectNodes(nodeName);
 				for (Object childs : nodes) {
 					Object realObject = PlugsFactory.getPluginsNewInstance(realClass);
@@ -717,7 +769,7 @@ public class XMLHelper {
 	/**
 	 * 获取节点的数据
 	 * 
-	 * @param nodes 节点集合
+	 * @param nodes      节点集合
 	 * @param targetType 目标类型
 	 * @return 实例
 	 */
